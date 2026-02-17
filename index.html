@@ -2,40 +2,39 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Rompecabezas 💕</title>
+<title>Rompecabezas Cumplemes</title>
 <style>
-body {
-    background: #ffe6f0;
-    text-align: center;
-    font-family: Arial, sans-serif;
+body{
+    text-align:center;
+    background-color:#f4cbd4;
+    font-family:Arial, sans-serif;
 }
 
-h1 {
-    color: #d63384;
+h1{
+    color:#e91e63;
 }
 
-#puzzle {
-    width: 300px;
-    height: 300px;
-    margin: 20px auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
+#puzzle{
+    width:450px;
+    height:450px;
+    margin:20px auto;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(3,1fr);
 }
 
-.piece {
-    width: 100px;
-    height: 100px;
-    background-image: url('foto.jpeg');
-    background-size: 300px 300px;
-    cursor: pointer;
+.piece{
+    border:1px solid white;
+    background-image:url("foto.jpg");
+    background-size:450px 450px;
+    cursor:pointer;
 }
 
-#mensaje {
-    display: none;
-    font-size: 24px;
-    color: #c2185b;
-    margin-top: 20px;
+#mensaje{
+    display:none;
+    margin-top:20px;
+    font-size:22px;
+    color:#d81b60;
 }
 </style>
 </head>
@@ -46,55 +45,46 @@ h1 {
 <div id="puzzle"></div>
 
 <div id="mensaje">
-💕 Feliz cumple mes mi amor 💕<br>
-Gracias por estar en mi vida, eres mi felicidad 🥹✨
+💖 Feliz cumple mes mi amor 💖 <br>
+Gracias por cada momento juntos ✨
 </div>
 
 <script>
 const puzzle = document.getElementById("puzzle");
-let order = [...Array(9).keys()];
+const mensaje = document.getElementById("mensaje");
+
+let order = [0,1,2,3,4,5,6,7,8];
 order.sort(() => Math.random() - 0.5);
 
-order.forEach(num => {
-    const piece = document.createElement("div");
-    piece.classList.add("piece");
-    piece.style.backgroundPosition = 
-        `${-(num % 3) * 100}px ${-Math.floor(num / 3) * 100}px`;
-    piece.dataset.correct = num;
-    puzzle.appendChild(piece);
-});
-
-let selected = null;
-
-puzzle.addEventListener("click", function(e){
-    if(!e.target.classList.contains("piece")) return;
-    
-    if(!selected){
-        selected = e.target;
-        selected.style.border = "3px solid red";
-    } else {
-        let temp = selected.style.backgroundPosition;
-        selected.style.backgroundPosition = e.target.style.backgroundPosition;
-        e.target.style.backgroundPosition = temp;
-        
-        selected.style.border = "none";
-        selected = null;
-        checkWin();
-    }
-});
-
-function checkWin(){
-    const pieces = document.querySelectorAll(".piece");
-    let correct = true;
-    pieces.forEach((piece, index) => {
-        if(parseInt(piece.dataset.correct) !== index){
-            correct = false;
-        }
+function crearPuzzle(){
+    puzzle.innerHTML="";
+    order.forEach(num=>{
+        let div=document.createElement("div");
+        div.classList.add("piece");
+        div.style.backgroundPosition=`${-150*(num%3)}px ${-150*Math.floor(num/3)}px`;
+        div.addEventListener("click",()=>{
+            order.sort((a,b)=>a-b);
+            crearPuzzle();
+            verificar();
+        });
+        puzzle.appendChild(div);
     });
-    if(correct){
-        document.getElementById("mensaje").style.display = "block";
+}
+
+function verificar(){
+    let correcto = true;
+    for(let i=0;i<order.length;i++){
+        if(order[i] !== i){
+            correcto = false;
+            break;
+        }
+    }
+    if(correcto){
+        mensaje.style.display="block";
     }
 }
+
+crearPuzzle();
 </script>
 
 </body>
