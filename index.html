@@ -2,105 +2,624 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Rompecabezas Cumplemes</title>
-
+<title>💖 Rompecabezas Cumplemes 💖</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
 <style>
-body{
-    text-align:center;
-    background-color:#f4cbd4;
-    font-family:Arial, sans-serif;
-}
+  :root {
+    --sakura-1: #ffb7c5;
+    --sakura-2: #ff85a1;
+    --sakura-3: #ff4d8f;
+    --cream: #fff5f8;
+    --gold: #ffd700;
+    --soft-pink: #ffe0ea;
+    --deep-rose: #c2185b;
+  }
 
-h1{
-    color:#e91e63;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-#puzzle{
-    width:450px;
-    height:450px;
-    margin:20px auto;
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    grid-template-rows:repeat(3,1fr);
-}
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ffe4ec 0%, #ffc2d4 40%, #ffb7c5 70%, #ffd6e8 100%);
+    font-family: 'Klee One', cursive;
+    overflow-x: hidden;
+    position: relative;
+  }
 
-.piece{
-    border:1px solid white;
-    background-image:url("foto.jpg");
-    background-size:450px 450px;
-    cursor:pointer;
-}
+  /* ── FONDO ANIMADO ── */
+  .bg-stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-.selected{
-    border:3px solid red;
-}
+  .star {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+    opacity: 0;
+  }
 
-#mensaje{
-    display:none;
-    margin-top:20px;
-    font-size:22px;
-    color:#d81b60;
-}
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 0.9; transform: scale(1.3); }
+  }
+
+  /* ── PÉTALOS DE SAKURA ── */
+  .petal {
+    position: fixed;
+    width: 14px;
+    height: 14px;
+    border-radius: 80% 0 80% 0;
+    background: linear-gradient(135deg, #ffb7c5, #ff85a1);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    animation: fall var(--fall-dur, 8s) linear var(--fall-delay, 0s) infinite;
+    top: -20px;
+  }
+
+  @keyframes fall {
+    0%   { opacity: 0; transform: translateY(0) rotate(0deg) translateX(0); }
+    10%  { opacity: 0.85; }
+    90%  { opacity: 0.7; }
+    100% { opacity: 0; transform: translateY(110vh) rotate(720deg) translateX(60px); }
+  }
+
+  /* ── CONTENIDO ── */
+  .container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px 50px;
+  }
+
+  /* ── TÍTULO ── */
+  .titulo-wrap {
+    position: relative;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  h1 {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-weight: 900;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    color: var(--deep-rose);
+    text-shadow: 3px 3px 0 rgba(255,255,255,0.8),
+                 0 0 25px rgba(255,100,150,0.5);
+    letter-spacing: 2px;
+    animation: floatTitle 3s ease-in-out infinite;
+  }
+
+  @keyframes floatTitle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: #e91e63;
+    margin-top: 4px;
+    letter-spacing: 1px;
+    opacity: 0.85;
+  }
+
+  /* ── DESTELLOS DECO ── */
+  .sparkle-ring {
+    position: absolute;
+    top: -20px; right: -30px;
+    width: 60px; height: 60px;
+    animation: spinSlow 6s linear infinite;
+  }
+  .sparkle-ring2 {
+    position: absolute;
+    bottom: -15px; left: -25px;
+    width: 45px; height: 45px;
+    animation: spinSlow 4s linear infinite reverse;
+  }
+
+  @keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* ── PANEL DEL PUZZLE ── */
+  .puzzle-panel {
+    position: relative;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(12px);
+    border: 3px solid rgba(255,180,200,0.8);
+    border-radius: 28px;
+    padding: 20px;
+    box-shadow:
+      0 20px 60px rgba(255,80,140,0.25),
+      inset 0 1px 0 rgba(255,255,255,0.9),
+      0 0 0 1px rgba(255,255,255,0.4);
+    animation: panelIn 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: scale(0.7) translateY(30px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* ── PUZZLE GRID ── */
+  #puzzle {
+    width: 450px;
+    height: 450px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 3px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(200,0,80,0.2);
+  }
+
+  .piece {
+    background-image: url("foto.jpg");
+    background-size: 450px 450px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
+    animation: pieceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  .piece::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .piece:hover {
+    transform: scale(1.04);
+    filter: brightness(1.07);
+    z-index: 2;
+    box-shadow: 0 0 18px rgba(255,100,150,0.6);
+  }
+
+  .piece.selected {
+    transform: scale(1.06) rotate(2deg);
+    box-shadow:
+      0 0 0 3px #ff4d8f,
+      0 0 25px rgba(255,77,143,0.7),
+      0 0 45px rgba(255,77,143,0.35);
+    filter: brightness(1.12);
+    z-index: 5;
+    animation: selectedPulse 0.8s ease-in-out infinite alternate;
+  }
+
+  @keyframes selectedPulse {
+    from { box-shadow: 0 0 0 3px #ff4d8f, 0 0 18px rgba(255,77,143,0.6); }
+    to   { box-shadow: 0 0 0 4px #ff85a1, 0 0 35px rgba(255,100,160,0.9); }
+  }
+
+  /* Entrada escalonada de piezas */
+  .piece:nth-child(1) { animation-delay: 0.05s; }
+  .piece:nth-child(2) { animation-delay: 0.10s; }
+  .piece:nth-child(3) { animation-delay: 0.15s; }
+  .piece:nth-child(4) { animation-delay: 0.20s; }
+  .piece:nth-child(5) { animation-delay: 0.25s; }
+  .piece:nth-child(6) { animation-delay: 0.30s; }
+  .piece:nth-child(7) { animation-delay: 0.35s; }
+  .piece:nth-child(8) { animation-delay: 0.40s; }
+  .piece:nth-child(9) { animation-delay: 0.45s; }
+
+  @keyframes pieceIn {
+    from { opacity: 0; transform: scale(0.5) rotate(15deg); }
+    to   { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+
+  /* ── SWAP FLASH ── */
+  .piece.swap-flash {
+    animation: swapFlash 0.35s ease-out;
+  }
+  @keyframes swapFlash {
+    0%   { filter: brightness(2) saturate(2); transform: scale(1.1); }
+    100% { filter: brightness(1) saturate(1); transform: scale(1); }
+  }
+
+  /* ── HINT / PROGRESO ── */
+  .progress-wrap {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .progress-bar-bg {
+    width: 200px;
+    height: 10px;
+    background: rgba(255,180,200,0.4);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff85a1, #ff4d8f, var(--gold));
+    border-radius: 20px;
+    transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 0 8px rgba(255,77,143,0.6);
+  }
+
+  .progress-label {
+    font-size: 0.85rem;
+    color: var(--deep-rose);
+    font-weight: 600;
+  }
+
+  /* ── BOTÓN REVOLVER ── */
+  .btn-shuffle {
+    margin-top: 14px;
+    padding: 10px 30px;
+    background: linear-gradient(135deg, #ff85a1, #ff4d8f);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(255,77,143,0.45);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    letter-spacing: 1px;
+  }
+
+  .btn-shuffle:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(255,77,143,0.6);
+  }
+  .btn-shuffle:active {
+    transform: translateY(0) scale(0.97);
+  }
+
+  /* ── MENSAJE FINAL ── */
+  #mensaje {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,180,200,0.25);
+    backdrop-filter: blur(6px);
+  }
+
+  #mensaje.visible {
+    display: flex;
+    animation: fadeInOverlay 0.6s ease both;
+  }
+
+  @keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .mensaje-card {
+    background: rgba(255,255,255,0.9);
+    border: 3px solid #ff85a1;
+    border-radius: 32px;
+    padding: 40px 50px;
+    text-align: center;
+    box-shadow: 0 30px 80px rgba(255,50,120,0.35);
+    animation: cardPop 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+    max-width: 420px;
+  }
+
+  @keyframes cardPop {
+    from { transform: scale(0.4) rotate(-8deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .mensaje-emoji {
+    font-size: 3.5rem;
+    display: block;
+    animation: heartBeat 1s ease-in-out infinite;
+  }
+
+  @keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    30% { transform: scale(1.25); }
+    60% { transform: scale(1.1); }
+  }
+
+  .mensaje-title {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--deep-rose);
+    margin: 14px 0 10px;
+    text-shadow: 2px 2px 0 rgba(255,255,255,0.8);
+    animation: shimmer 2s linear infinite;
+    background: linear-gradient(90deg, #c2185b, #ff4d8f, #ff85a1, #ff4d8f, #c2185b);
+    background-size: 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  @keyframes shimmer {
+    from { background-position: 0% center; }
+    to   { background-position: 200% center; }
+  }
+
+  .mensaje-text {
+    font-size: 1.05rem;
+    color: #ad1457;
+    line-height: 1.7;
+    margin-bottom: 22px;
+  }
+
+  .btn-cerrar {
+    padding: 10px 28px;
+    background: linear-gradient(135deg, #ff85a1, #ff4d8f);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 5px 18px rgba(255,77,143,0.5);
+  }
+  .btn-cerrar:hover { transform: scale(1.08); box-shadow: 0 8px 25px rgba(255,77,143,0.7); }
+
+  /* ── CONFETTI CORAZONES ── */
+  .confetti-heart {
+    position: fixed;
+    font-size: 1.4rem;
+    pointer-events: none;
+    z-index: 200;
+    animation: flyHeart 1.8s ease-out forwards;
+    top: 50%;
+    left: 50%;
+  }
+
+  @keyframes flyHeart {
+    0%   { opacity: 1; transform: translate(var(--tx0), var(--ty0)) scale(0.5) rotate(0deg); }
+    100% { opacity: 0; transform: translate(var(--tx1), var(--ty1)) scale(1.4) rotate(var(--rot)); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 500px) {
+    #puzzle { width: 300px; height: 300px; }
+    .piece  { background-size: 300px 300px !important; }
+    .progress-bar-bg { width: 140px; }
+  }
 </style>
 </head>
 <body>
 
-<h1>🧩 Arma nuestro rompecabezas 🧩</h1>
+<!-- Fondo de estrellitas -->
+<div class="bg-stars" id="bgStars"></div>
 
-<div id="puzzle"></div>
+<!-- Pétalos -->
+<div id="petals"></div>
 
+<!-- Contenido -->
+<div class="container">
+
+  <div class="titulo-wrap">
+    <!-- Estrella giratoria decorativa -->
+    <svg class="sparkle-ring" viewBox="0 0 60 60" fill="none">
+      <g opacity="0.9">
+        <path d="M30 5 L33 23 L50 15 L36 27 L55 30 L36 33 L50 45 L33 37 L30 55 L27 37 L10 45 L24 33 L5 30 L24 27 L10 15 L27 23 Z" fill="#ff85a1"/>
+        <circle cx="30" cy="30" r="5" fill="#ff4d8f"/>
+      </g>
+    </svg>
+    <svg class="sparkle-ring2" viewBox="0 0 60 60" fill="none">
+      <g opacity="0.7">
+        <path d="M30 8 L32 22 L46 18 L35 28 L50 30 L35 32 L46 42 L32 38 L30 52 L28 38 L14 42 L25 32 L10 30 L25 28 L14 18 L28 22 Z" fill="#ffd700"/>
+        <circle cx="30" cy="30" r="4" fill="#ffb347"/>
+      </g>
+    </svg>
+
+    <h1>🧩 Arma nuestro rompecabezas 🧩</h1>
+    <p class="subtitle">✨ Toca las piezas para intercambiarlas ✨</p>
+  </div>
+
+  <div class="puzzle-panel" style="margin-top: 18px;">
+    <div id="puzzle"></div>
+
+    <div class="progress-wrap">
+      <span class="progress-label">Progreso:</span>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" id="progressBar" style="width:0%"></div>
+      </div>
+      <span class="progress-label" id="progressText">0 / 9</span>
+    </div>
+
+    <button class="btn-shuffle" onclick="revolver()">🌸 Revolver</button>
+  </div>
+
+</div>
+
+<!-- Overlay mensaje final -->
 <div id="mensaje">
-💖 Feliz cumple mes mi amor 💖 <br>
-Gracias por cada momento juntos ✨
+  <div class="mensaje-card">
+    <span class="mensaje-emoji">💖</span>
+    <div class="mensaje-title">¡Feliz Cumple Mes!</div>
+    <p class="mensaje-text">
+      Gracias por cada momento juntos ✨<br>
+      Eres mi pieza favorita del universo 🌸💕
+    </p>
+    <button class="btn-cerrar" onclick="cerrarMensaje()">💝 ¡Gracias!</button>
+  </div>
 </div>
 
 <script>
-const puzzle = document.getElementById("puzzle");
-const mensaje = document.getElementById("mensaje");
+  /* ══════════════════════════════════
+     FONDO: ESTRELLAS
+  ══════════════════════════════════ */
+  const bgStars = document.getElementById('bgStars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      --dur:${2 + Math.random()*4}s;
+      --delay:${Math.random()*5}s;
+      width:${3+Math.random()*7}px;
+      height:${3+Math.random()*7}px;
+      background: hsl(${330+Math.random()*30},90%,${80+Math.random()*15}%);
+    `;
+    bgStars.appendChild(s);
+  }
 
-let order = [...Array(9).keys()];
-order.sort(() => Math.random() - 0.5);
+  /* ══════════════════════════════════
+     PÉTALOS DE SAKURA
+  ══════════════════════════════════ */
+  const petalsWrap = document.getElementById('petals');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    const hue = 330 + Math.random() * 30;
+    p.style.cssText = `
+      left:${Math.random()*100}%;
+      --fall-dur:${6+Math.random()*8}s;
+      --fall-delay:${Math.random()*8}s;
+      background: linear-gradient(135deg, hsl(${hue},80%,85%), hsl(${hue},80%,70%));
+      transform: rotate(${Math.random()*360}deg);
+      width:${10+Math.random()*10}px;
+      height:${10+Math.random()*10}px;
+    `;
+    petalsWrap.appendChild(p);
+  }
 
-let firstSelected = null;
+  /* ══════════════════════════════════
+     PUZZLE LOGIC
+  ══════════════════════════════════ */
+  const puzzleEl = document.getElementById('puzzle');
+  const mensajeEl = document.getElementById('mensaje');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
 
-function crearPuzzle(){
-    puzzle.innerHTML="";
+  let order = [...Array(9).keys()];
+  let firstSelected = null;
 
-    order.forEach((num,index)=>{
-        let div=document.createElement("div");
-        div.classList.add("piece");
-        div.style.backgroundPosition=`${-150*(num%3)}px ${-150*Math.floor(num/3)}px`;
-
-        div.addEventListener("click",()=>{
-            if(firstSelected === null){
-                firstSelected = index;
-                div.classList.add("selected");
-            } else {
-                // intercambiar
-                [order[firstSelected], order[index]] = 
-                [order[index], order[firstSelected]];
-
-                firstSelected = null;
-                crearPuzzle();
-                verificar();
-            }
-        });
-
-        puzzle.appendChild(div);
-    });
-}
-
-function verificar(){
-    for(let i=0;i<order.length;i++){
-        if(order[i] !== i){
-            return;
-        }
+  function shuffle() {
+    // Fisher-Yates garantizado
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
     }
-    mensaje.style.display="block";
-}
+    // Asegurar que no esté resuelto de entrada
+    if (order.every((v,i) => v === i)) shuffle();
+  }
+  shuffle();
 
-crearPuzzle();
+  function crearPuzzle() {
+    puzzleEl.innerHTML = '';
+    firstSelected = null;
+    order.forEach((num, index) => {
+      const div = document.createElement('div');
+      div.className = 'piece';
+      const col = num % 3;
+      const row = Math.floor(num / 3);
+
+      // Soporte responsive: leer tamaño real del grid
+      const size = puzzleEl.offsetWidth || 450;
+      const pieceSize = size / 3;
+      div.style.backgroundImage = 'url("foto.jpeg")';
+      div.style.backgroundSize = `${size}px ${size}px`;
+      div.style.backgroundPosition = `${-pieceSize * col}px ${-pieceSize * row}px`;
+
+      div.addEventListener('click', () => handleClick(index, div));
+      puzzleEl.appendChild(div);
+    });
+    actualizarProgreso();
+  }
+
+  function handleClick(index, div) {
+    if (firstSelected === null) {
+      firstSelected = index;
+      div.classList.add('selected');
+    } else {
+      if (firstSelected === index) {
+        div.classList.remove('selected');
+        firstSelected = null;
+        return;
+      }
+      // Intercambio
+      [order[firstSelected], order[index]] = [order[index], order[firstSelected]];
+      firstSelected = null;
+      crearPuzzle();
+      // Flash en las piezas intercambiadas
+      [firstSelected, index].forEach(i => {
+        const p = puzzleEl.children[i];
+        if (p) { p.classList.add('swap-flash'); }
+      });
+      verificar();
+    }
+  }
+
+  function actualizarProgreso() {
+    let correct = 0;
+    order.forEach((v, i) => { if (v === i) correct++; });
+    const pct = Math.round((correct / 9) * 100);
+    progressBar.style.width = pct + '%';
+    progressText.textContent = `${correct} / 9`;
+  }
+
+  function verificar() {
+    if (order.every((v, i) => v === i)) {
+      setTimeout(() => {
+        mensajeEl.classList.add('visible');
+        lanzarCorazones();
+      }, 400);
+    }
+  }
+
+  function revolver() {
+    shuffle();
+    crearPuzzle();
+    mensajeEl.classList.remove('visible');
+  }
+
+  function cerrarMensaje() {
+    mensajeEl.classList.remove('visible');
+  }
+
+  /* ══════════════════════════════════
+     CONFETTI DE CORAZONES
+  ══════════════════════════════════ */
+  const HEARTS = ['💖','💕','🌸','✨','💗','🌷','💓','⭐'];
+  function lanzarCorazones() {
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => {
+        const h = document.createElement('span');
+        h.className = 'confetti-heart';
+        h.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 150 + Math.random() * 200;
+        h.style.cssText = `
+          --tx0: 0px; --ty0: 0px;
+          --tx1: ${Math.cos(angle)*dist}px;
+          --ty1: ${Math.sin(angle)*dist - 100}px;
+          --rot: ${(Math.random()-0.5)*360}deg;
+          font-size: ${1+Math.random()*1.5}rem;
+          animation-duration: ${1.2+Math.random()*0.8}s;
+          animation-delay: ${Math.random()*0.4}s;
+        `;
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 2400);
+      }, i * 60);
+    }
+  }
+
+  /* Init */
+  crearPuzzle();
 </script>
-
 </body>
 </html>
