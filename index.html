@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Rompecabezas Cumplemes</title>
+
 <style>
 body{
     text-align:center;
@@ -25,9 +26,13 @@ h1{
 
 .piece{
     border:1px solid white;
-    background-image:url("foto.jpeg");
+    background-image:url("foto.jpg");
     background-size:450px 450px;
     cursor:pointer;
+}
+
+.selected{
+    border:3px solid red;
 }
 
 #mensaje{
@@ -53,35 +58,45 @@ Gracias por cada momento juntos ✨
 const puzzle = document.getElementById("puzzle");
 const mensaje = document.getElementById("mensaje");
 
-let order = [0,1,2,3,4,5,6,7,8];
+let order = [...Array(9).keys()];
 order.sort(() => Math.random() - 0.5);
+
+let firstSelected = null;
 
 function crearPuzzle(){
     puzzle.innerHTML="";
-    order.forEach(num=>{
+
+    order.forEach((num,index)=>{
         let div=document.createElement("div");
         div.classList.add("piece");
         div.style.backgroundPosition=`${-150*(num%3)}px ${-150*Math.floor(num/3)}px`;
+
         div.addEventListener("click",()=>{
-            order.sort((a,b)=>a-b);
-            crearPuzzle();
-            verificar();
+            if(firstSelected === null){
+                firstSelected = index;
+                div.classList.add("selected");
+            } else {
+                // intercambiar
+                [order[firstSelected], order[index]] = 
+                [order[index], order[firstSelected]];
+
+                firstSelected = null;
+                crearPuzzle();
+                verificar();
+            }
         });
+
         puzzle.appendChild(div);
     });
 }
 
 function verificar(){
-    let correcto = true;
     for(let i=0;i<order.length;i++){
         if(order[i] !== i){
-            correcto = false;
-            break;
+            return;
         }
     }
-    if(correcto){
-        mensaje.style.display="block";
-    }
+    mensaje.style.display="block";
 }
 
 crearPuzzle();
