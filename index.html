@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Rompecabezas 💕</title>
+<style>
+body {
+    background: #ffe6f0;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    color: #d63384;
+}
+
+#puzzle {
+    width: 300px;
+    height: 300px;
+    margin: 20px auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+}
+
+.piece {
+    width: 100px;
+    height: 100px;
+    background-image: url('foto.jpg');
+    background-size: 300px 300px;
+    cursor: pointer;
+}
+
+#mensaje {
+    display: none;
+    font-size: 24px;
+    color: #c2185b;
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+
+<h1>🧩 Arma nuestro rompecabezas 🧩</h1>
+
+<div id="puzzle"></div>
+
+<div id="mensaje">
+💕 Feliz cumple mes mi amor 💕<br>
+Gracias por estar en mi vida, eres mi felicidad 🥹✨
+</div>
+
+<script>
+const puzzle = document.getElementById("puzzle");
+let order = [...Array(9).keys()];
+order.sort(() => Math.random() - 0.5);
+
+order.forEach(num => {
+    const piece = document.createElement("div");
+    piece.classList.add("piece");
+    piece.style.backgroundPosition = 
+        `${-(num % 3) * 100}px ${-Math.floor(num / 3) * 100}px`;
+    piece.dataset.correct = num;
+    puzzle.appendChild(piece);
+});
+
+let selected = null;
+
+puzzle.addEventListener("click", function(e){
+    if(!e.target.classList.contains("piece")) return;
+    
+    if(!selected){
+        selected = e.target;
+        selected.style.border = "3px solid red";
+    } else {
+        let temp = selected.style.backgroundPosition;
+        selected.style.backgroundPosition = e.target.style.backgroundPosition;
+        e.target.style.backgroundPosition = temp;
+        
+        selected.style.border = "none";
+        selected = null;
+        checkWin();
+    }
+});
+
+function checkWin(){
+    const pieces = document.querySelectorAll(".piece");
+    let correct = true;
+    pieces.forEach((piece, index) => {
+        if(parseInt(piece.dataset.correct) !== index){
+            correct = false;
+        }
+    });
+    if(correct){
+        document.getElementById("mensaje").style.display = "block";
+    }
+}
+</script>
+
+</body>
+</html>
